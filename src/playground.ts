@@ -701,7 +701,6 @@ function addPlusMinusControl(x: number, layerIdx: number) {
     state.networkShape[i] + " neuron" + suffix
   );
 }
-
 function updateHoverCard(type: HoverType, nodeOrLink?: nn.Node | nn.Link,
     coordinates?: [number, number]) {
   let hovercard = d3.select("#hovercard");
@@ -731,10 +730,21 @@ function updateHoverCard(type: HoverType, nodeOrLink?: nn.Node | nn.Link,
     });
     (input.node() as HTMLInputElement).focus();
   });
-  let value = (type === HoverType.WEIGHT) ?
-    (nodeOrLink as nn.Link).weight :
-    (nodeOrLink as nn.Node).bias;
-  let name = (type === HoverType.WEIGHT) ? "Weight" : "Bias";
+  
+  // Modification starts here
+  let value = "";
+  let name = "";
+  if (type === HoverType.WEIGHT) {
+      name = "Weight";
+      value = (nodeOrLink as nn.Link).weight.toPrecision(2);
+  } else if (type === HoverType.BIAS) {
+      name = "Bias";
+      value = (nodeOrLink as nn.Node).bias.toPrecision(2);
+  } else if (type === HoverType.ACTIVATION) {
+      name = "Activation";
+      value = (nodeOrLink as nn.Node).output.toPrecision(2);
+  }
+
   hovercard.style({
     "left": `${coordinates[0] + 20}px`,
     "top": `${coordinates[1]}px`,
@@ -743,11 +753,13 @@ function updateHoverCard(type: HoverType, nodeOrLink?: nn.Node | nn.Link,
   hovercard.select(".type").text(name);
   hovercard.select(".value")
     .style("display", null)
-    .text(value.toPrecision(2));
+    .text(value);
   hovercard.select("input")
-    .property("value", value.toPrecision(2))
+    .property("value", value)
     .style("display", "none");
+  // Modification ends here
 }
+
 
 function drawLink(
     input: nn.Link, node2coord: {[id: string]: {cx: number, cy: number}},
